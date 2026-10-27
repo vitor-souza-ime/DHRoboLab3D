@@ -1,0 +1,52 @@
+{
+  "id": "20261026T012650-7ea099e4",
+  "tipo": "varredura_dh_classica",
+  "engine": "numpy-python-fk",
+  "configuration": "RRP",
+  "joint": 3,
+  "joint_type": "P",
+  "varied_parameter": "d",
+  "parameter_unit": "m",
+  "start": 0.0,
+  "end": 1.2,
+  "samples": 91,
+  "fixed_parameters": [
+    {
+      "type": "R",
+      "theta": 45.0,
+      "d": 0.2,
+      "a": 0.0,
+      "alpha": 90.0
+    },
+    {
+      "type": "R",
+      "theta": 30.0,
+      "d": 0.0,
+      "a": 0.6,
+      "alpha": -90.0
+    },
+    {
+      "type": "P",
+      "theta": 0.0,
+      "d": 0.35,
+      "a": 0.12,
+      "alpha": 0.0
+    }
+  ],
+  "language": "en",
+  "coordinate_units": "m",
+  "notes": "Deterministic forward kinematics model; no educational outcome evaluation.",
+  "x_range_m": [
+    0.016644084989043684,
+    0.44090815370097214
+  ],
+  "y_range_m": [
+    0.016644084989043684,
+    0.440908153700972
+  ],
+  "z_range_m": [
+    0.5599999999999999,
+    1.5992304845413263
+  ],
+  "travel_distance_m": 1.1999999999999997
+}

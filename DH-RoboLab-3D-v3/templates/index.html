@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DH RoboLab 3D | Cinemática Direta</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='vendor/plotly.min.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/i18n.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon" aria-hidden="true">▱</div>
+    <div>
+      <span class="brand-title">DH RoboLab <span>3D</span></span>
+      <div class="brand-subtitle" data-i18n="brandSubtitle">Laboratório interativo de cinemática direta</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="top-status"><span class="pulse"></span> Python + Flask <span class="separator">•</span> <span data-i18n="dhClassic">DH clássica</span></div>
+    <div class="language-switch" role="group" aria-label="Language / Idioma">
+      <button type="button" id="langPt" class="lang-button active" lang="pt-BR" aria-pressed="true">PT</button>
+      <button type="button" id="langEn" class="lang-button" lang="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+</header>
+<main class="shell">
+  <div class="intro">
+    <div>
+      <div class="eyebrow" data-i18n="eyebrow">ROBÓTICA EDUCATIVA · JUNTAS R/P</div>
+      <h1 data-i18n="heroTitle">Da tabela DH ao movimento em 3D</h1>
+      <p data-i18n="heroDesc">Escolha juntas rotacionais (R) ou prismáticas (P). Ajuste θ, d, a e α para visualizar a cinemática direta em 3D e experimentar combinações RRR, RRP, RPP e PPP.</p>
+    </div>
+    <div class="formula-bubble">
+      <span data-i18n="modelLabel">Modelo utilizado</span>
+      <code>T₀³ = A₁ · A₂ · A₃</code>
+      <small data-i18n="unitsDescription">θ e α em graus · d e a em metros</small>
+    </div>
+  </div>
+  <div id="error" class="notice error hidden" role="alert"></div>
+  <div id="success" class="notice success hidden" role="status"></div>
+  <section class="workbench">
+    <aside class="panel controls">
+      <div class="panel-head">
+        <div><div class="section-label" data-i18n="configurationSection">01 · CONFIGURAÇÃO</div><h2 data-i18n="dhParameters">Parâmetros de Denavit–Hartenberg</h2></div>
+        <span id="configurationTag" class="tag">RRR</span>
+      </div>
+      <div class="definition" data-i18n="jointDescription">Em juntas R, o controle articular modifica θ. Em juntas P, modifica d. Os demais valores DH continuam editáveis como parâmetros geométricos.</div>
+      <div class="toolbar">
+        <label for="preset" data-i18n="configuration">Configuração</label>
+        <select id="preset">
+          <option value="rrr" data-i18n="presetRrr">RRR · Articulado</option>
+          <option value="rrp" data-i18n="presetRrp">RRP · Telescópico</option>
+          <option value="rpp" data-i18n="presetRpp">RPP · Cilíndrico</option>
+          <option value="ppp" data-i18n="presetPpp">PPP · Cartesiano</option>
+          <option value="extended" data-i18n="presetExtended">RRR · Estendido</option>
+          <option value="folded" data-i18n="presetFolded">RRR · Flexionado</option>
+        </select>
+        <button id="reset" type="button" class="btn btn-ghost" data-i18n="reset">Restaurar</button>
+      </div>
+      <div class="table-wrap">
+        <table class="param-table">
+          <thead><tr>
+            <th data-i18n="joint">Junta</th><th data-i18n="type">Tipo</th>
+            <th>θ (°)</th><th>d (m)</th><th>a (m)</th><th>α (°)</th>
+          </tr></thead>
+          <tbody id="paramBody"></tbody>
+        </table>
+      </div>
+      <div class="sliders">
+        <div class="slider-label-row"><strong data-i18n="jointCoordinates">Coordenadas das juntas</strong><span>R → θ (°) · P → d (m)</span></div>
+        <div id="sliderRows"></div>
+      </div>
+      <div class="quick-info"><span class="info-icon" aria-hidden="true">i</span><p data-i18n="dhNote">Usamos DH clássica. Os valores θ e d são mantidos na tabela em todas as juntas; apenas um deles é a variável de atuação de cada junta (θ para R, d para P). A matriz 4×4 é calculada, não editada diretamente.</p></div>
+      <div class="btnline">
+        <button class="btn btn-main" id="saveCsv" type="button" data-i18n="exportPose">Exportar pose (.json)</button>
+        <button class="btn btn-ghost" id="clearTrail" type="button" data-i18n="clearTrail">Limpar trajetória</button>
+      </div>
+    </aside>
+    <section class="panel visual">
+      <div class="panel-head between">
+        <div><div class="section-label" data-i18n="visualSection">02 · VISUALIZAÇÃO</div><h2 data-i18n="robotArm3D">Braço robótico em 3D</h2></div>
+        <button id="resetCamera" class="btn btn-ghost small" type="button" data-i18n="resetCamera">Redefinir câmera</button>
+      </div>
+      <div class="legend">
+        <span><i class="legend-line link"></i> <span data-i18n="links">Elos</span></span>
+        <span><i class="legend-dot joint"></i> <span data-i18n="revolute">Rotacional (R)</span></span>
+        <span><i class="legend-dot prismatic"></i> <span data-i18n="prismatic">Prismática (P)</span></span>
+        <span><i class="legend-dot eff"></i> <span data-i18n="endEffector">Efetuador</span></span>
+        <span><i class="legend-line path"></i> <span data-i18n="trajectory">Trajetória</span></span>
+      </div>
+      <div class="plot-wrap"><div id="arm3d" class="plot" aria-label="3D robot manipulator" role="img"><div class="plot-loading" data-i18n="plotLoading">Preparando visualização 3D…</div></div></div>
+      <div class="display-options">
+        <label><input type="checkbox" id="showFrames" checked> <span data-i18n="showFrames">Mostrar eixos DH</span></label>
+        <label><input type="checkbox" id="showTrail" checked> <span data-i18n="showTrail">Mostrar trajetória</span></label>
+        <span class="minor" data-i18n="plotControls">Arraste para girar · scroll para zoom</span>
+      </div>
+      <div class="coordinates">
+        <div><span data-i18n="positionX">Posição X</span><strong id="px">—</strong><small data-i18n="meters">metros</small></div>
+        <div><span data-i18n="positionY">Posição Y</span><strong id="py">—</strong><small data-i18n="meters">metros</small></div>
+        <div><span data-i18n="positionZ">Posição Z</span><strong id="pz">—</strong><small data-i18n="meters">metros</small></div>
+      </div>
+    </section>
+  </section>
+  <section class="panel matrices-section">
+    <div class="panel-head between"><div><div class="section-label" data-i18n="mathSection">03 · MATEMÁTICA</div><h2 data-i18n="matricesTitle">Matrizes calculadas em tempo real</h2></div><span class="math-status" id="mathStatus">—</span></div>
+    <p class="muted" data-i18n="matricesIntro">Cada Aᵢ descreve um movimento relativo entre referenciais consecutivos. O produto dessas matrizes fornece a pose do efetuador em relação à base.</p>
+    <div id="matrices" class="matrices-grid"></div>
+    <div class="full-matrix"><div><div class="section-label" data-i18n="result">RESULTADO</div><h3 data-i18n="finalTransformation">Transformação final T₀³</h3><p data-i18n="lastColumn">Última coluna: posição cartesiana em metros. Bloco 3×3: orientação.</p></div><div id="finalMatrix"></div></div>
+  </section>
+  <section class="panel experiment-section">
+    <div class="panel-head"><div><div class="section-label" data-i18n="experimentsSection">04 · EXPERIMENTOS</div><h2 data-i18n="jointSweep">Varredura articular e gráficos</h2></div><span class="tag">CSV + PNG + ZIP</span></div>
+    <p class="muted" data-i18n="sweepIntro">Varie a coordenada ativa da junta escolhida: θ (graus) para R ou d (metros) para P. O sistema calcula a trajetória e gera quatro gráficos e CSV.</p>
+    <div class="experiment-form">
+      <label><span data-i18n="joint">Junta</span><select id="expJoint"><option value="1" data-i18n="baseJoint">1 · Base</option><option value="2" selected data-i18n="shoulderJoint">2 · Ombro</option><option value="3" data-i18n="elbowJoint">3 · Cotovelo</option></select></label>
+      <label><span id="expStartLabel">θ inicial (°)</span><input id="expStart" type="number" value="-90" min="-360" max="360" step="1"></label>
+      <label><span id="expEndLabel">θ final (°)</span><input id="expEnd" type="number" value="90" min="-360" max="360" step="1"></label>
+      <label><span data-i18n="samples">Pontos</span><input id="expSamples" type="number" value="91" min="5" max="361"></label>
+      <button type="button" id="runExp" class="btn btn-main" data-i18n="generate">Gerar experimento</button>
+    </div>
+    <div id="results" class="results hidden"><div class="result-head"><div><h3 data-i18n="resultsGenerated">Resultados gerados</h3><p id="resultSummary"></p></div><a id="downloadZip" class="btn btn-main" download data-i18n="downloadZip">Baixar dados e gráficos (.zip)</a></div><div id="figureGrid" class="figures"></div></div>
+    <div class="education-footnote" data-i18n="academicNote">Uso acadêmico: os gráficos mostram resultados matemáticos de cinemática direta, não evidências de melhoria de aprendizagem. Para publicação sobre eficácia educacional, são necessárias outras formas de avaliação.</div>
+  </section>
+  <footer data-i18n="footer">DH RoboLab 3D 3.0 · Juntas rotacionais e prismáticas · Cinemática direta NumPy · Gráficos Plotly locais.</footer>
+</main>
+</body>
+</html>

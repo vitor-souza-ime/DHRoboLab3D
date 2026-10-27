@@ -1,0 +1,52 @@
+{
+  "id": "20261026T012650-affc9991",
+  "tipo": "varredura_dh_classica",
+  "engine": "numpy-python-fk",
+  "configuration": "RRR",
+  "joint": 2,
+  "joint_type": "R",
+  "varied_parameter": "theta",
+  "parameter_unit": "graus",
+  "start": -90.0,
+  "end": 90.0,
+  "samples": 91,
+  "fixed_parameters": [
+    {
+      "type": "R",
+      "theta": 45.0,
+      "d": 0.2,
+      "a": 0.0,
+      "alpha": 90.0
+    },
+    {
+      "type": "R",
+      "theta": 30.0,
+      "d": 0.0,
+      "a": 0.6,
+      "alpha": 0.0
+    },
+    {
+      "type": "R",
+      "theta": 45.0,
+      "d": 0.0,
+      "a": 0.4,
+      "alpha": 0.0
+    }
+  ],
+  "language": "pt",
+  "coordinate_units": "m",
+  "notes": "Modelo determinístico de cinemática direta; não avalia resultados de aprendizagem.",
+  "x_range_m": [
+    -0.2,
+    0.6555138093123946
+  ],
+  "y_range_m": [
+    -0.1999999999999999,
+    0.6555138093123944
+  ],
+  "z_range_m": [
+    -0.682842712474619,
+    1.1270365194524392
+  ],
+  "travel_distance_m": 2.912247908300753
+}
